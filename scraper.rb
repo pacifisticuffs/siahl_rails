@@ -1,14 +1,12 @@
 require 'rubygems'
 require 'mechanize'
 
+# global mechanize object
+$a = Mechanize.new
 
 # gets the schedule for a particular team
 def get_schedule( url )
-  a = Mechanize.new { |agent|
-    agent.user_agent_alias = 'Mac Safari'
-  }
-
-  a.get( url ) do |page|
+  $a.get( url ) do |page|
     tables = page.search( 'table' )
 
     tables.each do |table|
@@ -34,17 +32,11 @@ def clean_data( data )
   return data
 end
 
-
-
 # get_schedule( 'http://stats.liahl.org/display-schedule.php?team=2034&season=27&tlev=0&tseq=0&league=1' )
 
 # get details from a game
 def get_game( url )
-  a = Mechanize.new { |agent|
-    agent.user_agent_alias = 'Mac Safari'
-  }
-
-  a.get( url ) do |page|
+  $a.get( url ) do |page|
     tables = page.search( 'table' )
 
     visitor_players = tables[11]
@@ -101,7 +93,6 @@ def parse_scoring( scores )
   end
 end
 
-
 def parse_players( players )
   rows = players.search( 'tr' )
   rows.each do |row|
@@ -121,9 +112,34 @@ def parse_players( players )
 
     end
   end
-
 end
 
-get_game( 'http://stats.liahl.org/oss-scoresheet?game_id=103515&mode=display' )
+# get_game( 'http://stats.liahl.org/oss-scoresheet?game_id=103515&mode=display' )
 
+# Fetches all the teams and puts them in their division
+def parse_teams( url )
+  $a.get( url ) do |page|
+    tables = page.search( 'table' )
+    if tables.any? then
+      tables.each do |table|
+        rows = table.search( 'tr' )
+        if rows.any? then
+          rows.each do |row|
+            league = row.at( 'th[colspan] a[name]' )
+            if league then
+              league = clean_data( league.text )
+              puts league
+            else
+              team = row.at( 'td a' )
+              if team then
+                puts '  %s' % clean_data( team.text )
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
 
+parse_teams( 'http://stats.liahl.org/display-stats.php?league=1' )
