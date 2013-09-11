@@ -117,7 +117,7 @@ end
 # get_game( 'http://stats.liahl.org/oss-scoresheet?game_id=103515&mode=display' )
 
 # Fetches all the teams and puts them in their division
-def parse_teams( url )
+def get_teams( url )
   $a.get( url ) do |page|
     tables = page.search( 'table' )
     if tables.any? then
@@ -142,4 +142,4 @@ def parse_teams( url )
   end
 end
 
-parse_teams( 'http://stats.liahl.org/display-stats.php?league=1' )
+get_teams( 'http://stats.liahl.org/display-stats.php?league=1' )
